@@ -1,0 +1,143 @@
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+
+html {
+  height: 100%;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
+
+body {
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
+  color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset the user agent margin.
+  margin: 0;
+  height: 100%;
+}
+:root {
+  --color-primary: #2563eb;
+  --color-primary-dark: #eff6ff;
+  --color-primary-light: rgb(37 99, 235 / 20%);
+
+  --color-background: #f8fafc;
+  --color-sidebar: rgb(255 255 255 / 88%);
+  --color-surface: #ffffff;
+  --color-surface-hover: #f8fafc;
+  --color-input: #ffffff;
+
+  --color-text-primary: #172033;
+  --color-text-secondary: #64748b;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+
+  --color-success-surface: #ecfdf5;
+  --color-success-border: #a7f3d0;
+  --color-success-text: #047857;
+
+  --color-danger: #dc2626;
+  --color-danger-surface: #fef2f2;
+  --color-danger-border: #fecaca;
+  --color-danger-text: #b91c1c;
+
+  --color-warning-surface: #fffbeb;
+  --color-warning-border: #fde68a;
+  --color-warning-text: #b45309;
+
+  --color-primary-soft: #eff6ff;
+  --color-primary-focus: #93c5fd;
+
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  --radius-medium: 0.5rem;
+  --radius-large: 0.75rem;
+
+  --shadow-card: 0 10px 25px rgb(15 23 42 / 6%);
+  --transition-standard: 160ms ease;
+
+  // Notification Snackbar
+  --color-notification-surface: #f8fafc;
+
+  --shadow-notification:
+    0 10px 25px rgb(15 23 42 / 12%),
+    0 4px 10px rgb(15 23 42 / 6%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--color-background);
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: Inter, 'Segoe UI', Roboto, Arial, sans-serif;
+  line-height: 1.5;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--color-primary-focus);
+  outline-offset: 2px;
+}
+
+.mat-mdc-button,
+.mat-mdc-outlined-button,
+.mat-mdc-unelevated-button,
+.mat-mdc-raised-button {
+  border-radius: var(--radius-medium) !important;
+}
+
+.notification-snackbar.mat-mdc-snack-bar-container {
+  min-width: 0;
+  max-width: min(28rem, calc(100vw - 2rem));
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.notification-snackbar.mat-mdc-snack-bar-container
+  .mat-mdc-snackbar-surface {
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}

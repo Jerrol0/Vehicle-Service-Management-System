@@ -1,0 +1,33 @@
+:host {
+  display: block;
+}
+
+mat-dialog-content {
+  color: var(--color-text-secondary);
+}
+
+mat-dialog-content p {
+  margin: 0;
+}
+
+mat-dialog-actions {
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+}
+
+.dialog-confirm-button {
+  background-color: var(--color-primary) !important;
+  color: #ffffff !important;
+}
+
+.dialog-confirm-button:hover {
+  background-color: #1d4ed8 !important;
+}
+
+.dialog-confirm-button-danger {
+  background-color: var(--color-danger) !important;
+}
+
+.dialog-confirm-button-danger:hover {
+  background-color: #b91c1c !important;
+}

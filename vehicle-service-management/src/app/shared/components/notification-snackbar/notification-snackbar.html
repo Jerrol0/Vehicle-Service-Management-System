@@ -1,0 +1,34 @@
+<div
+  class="notification"
+  [class.notification-success]="data.type === 'success'"
+  [class.notification-error]="data.type === 'error'"
+  [class.notification-warning]="data.type === 'warning'"
+  [class.notification-info]="data.type === 'info'"
+>
+  <mat-icon
+    class="notification-icon"
+    aria-hidden="true"
+  >
+    {{ icon }}
+  </mat-icon>
+
+  <div class="notification-content">
+    <div class="notification-title">
+      {{ data.title }}
+    </div>
+
+    <div class="notification-message">
+      {{ data.message }}
+    </div>
+  </div>
+
+  <button
+    mat-icon-button
+    type="button"
+    class="notification-close"
+    aria-label="Dismiss notification"
+    (click)="close()"
+  >
+    <mat-icon aria-hidden="true">close</mat-icon>
+  </button>
+</div>

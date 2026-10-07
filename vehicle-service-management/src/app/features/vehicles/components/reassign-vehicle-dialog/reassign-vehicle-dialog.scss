@@ -1,0 +1,27 @@
+:host {
+  display: block;
+}
+
+.dialog-intro {
+  margin-bottom: var(--space-4);
+}
+
+.vehicle-name {
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.current-customer {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-secondary);
+}
+
+.customer-field {
+  width: 100%;
+}
+
+mat-dialog-actions {
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+}

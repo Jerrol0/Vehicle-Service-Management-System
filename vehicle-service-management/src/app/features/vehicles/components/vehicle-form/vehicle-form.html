@@ -1,0 +1,206 @@
+<form
+  class="vehicle-form"
+  [formGroup]="vehicleForm"
+  (ngSubmit)="submit()"
+>
+  <div class="form-section">
+    <div class="section-heading">
+      <h2>Vehicle Information</h2>
+      <p>Enter the vehicle's identification and current information.</p>
+    </div>
+
+    <div class="form-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Plate Number</mat-label>
+        <input
+          matInput
+          formControlName="plateNumber"
+          maxlength="20"
+        />
+
+        @if (vehicleForm.controls.plateNumber.hasError('required')) {
+          <mat-error>Plate number is required.</mat-error>
+        }
+
+        @if (vehicleForm.controls.plateNumber.hasError('maxlength')) {
+          <mat-error>Plate number cannot exceed 20 characters.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Brand</mat-label>
+        <input
+          matInput
+          formControlName="brand"
+          maxlength="50"
+        />
+
+        @if (vehicleForm.controls.brand.hasError('required')) {
+          <mat-error>Brand is required.</mat-error>
+        }
+
+        @if (vehicleForm.controls.brand.hasError('maxlength')) {
+          <mat-error>Brand cannot exceed 50 characters.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Model</mat-label>
+        <input
+          matInput
+          formControlName="model"
+          maxlength="50"
+        />
+
+        @if (vehicleForm.controls.model.hasError('required')) {
+          <mat-error>Model is required.</mat-error>
+        }
+
+        @if (vehicleForm.controls.model.hasError('maxlength')) {
+          <mat-error>Model cannot exceed 50 characters.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Vehicle Year</mat-label>
+        <input
+          matInput
+          type="number"
+          formControlName="year"
+        />
+
+        @if (vehicleForm.controls.year.hasError('required')) {
+          <mat-error>Year is required.</mat-error>
+        }
+
+        @if (vehicleForm.controls.year.hasError('min')) {
+          <mat-error>Year must be 1900 or later.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Color</mat-label>
+        <input
+          matInput
+          formControlName="color"
+          maxlength="50"
+        />
+
+        @if (vehicleForm.controls.color.hasError('required')) {
+          <mat-error>Color is required.</mat-error>
+        }
+
+        @if (vehicleForm.controls.color.hasError('maxlength')) {
+          <mat-error>Color cannot exceed 50 characters.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>VIN</mat-label>
+        <input
+          matInput
+          formControlName="vin"
+          maxlength="17"
+        />
+
+        <mat-hint>Optional</mat-hint>
+
+        @if (vehicleForm.controls.vin.hasError('maxlength')) {
+          <mat-error>VIN cannot exceed 17 characters.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Current Mileage</mat-label>
+        <input
+          matInput
+          type="number"
+          formControlName="currentMileage"
+          min="0"
+          step="1"
+        />
+
+        @if (vehicleForm.controls.currentMileage.hasError('required')) {
+          <mat-error>Current mileage is required.</mat-error>
+        }
+
+        @if (vehicleForm.controls.currentMileage.hasError('min')) {
+          <mat-error>Mileage cannot be negative.</mat-error>
+        }
+
+        @if (vehicleForm.controls.currentMileage.hasError('wholeNumber')) {
+          <mat-error>Current mileage must be a whole number.</mat-error>
+        
+        }
+      </mat-form-field>
+
+      <mat-form-field
+        class="customer-field"
+        appearance="outline"
+      >
+        <mat-label>Customer</mat-label>
+
+        <input
+          matInput
+          appDebouncedSearch
+          [matAutocomplete]="customerAutocomplete"
+          [value]="selectedCustomer?.fullName ?? ''"
+          (debouncedSearch)="onCustomerSearch($event)"
+        />
+
+        <mat-autocomplete
+          #customerAutocomplete="matAutocomplete"
+          (optionSelected)="selectCustomer($event.option.value)"
+        >
+          @if (isLoadingCustomers()) {
+            <mat-option disabled>
+              <mat-spinner diameter="20"></mat-spinner>
+              Searching customers...
+            </mat-option>
+          }
+
+          @for (customer of customers(); track customer.id) {
+            <mat-option [value]="customer">
+              {{ customer.fullName }}
+            </mat-option>
+          }
+
+          @if (!isLoadingCustomers() && customers().length === 0) {
+            <mat-option disabled>
+              No customers found.
+            </mat-option>
+          }
+        </mat-autocomplete>
+
+        <mat-hint>Optional. Search by customer name.</mat-hint>
+
+        @if (customerLoadError()) {
+          <mat-error>Unable to load customers.</mat-error>
+        }
+      </mat-form-field>
+    </div>
+  </div>
+
+<div class="form-actions">
+  <button
+    mat-button
+    type="button"
+    (click)="cancel.emit()"
+    [disabled]="isSubmitting"
+  >
+    Cancel
+  </button>
+
+  <button
+    mat-flat-button
+    type="submit"
+    [disabled]="isSubmitting"
+  >
+    @if (isSubmitting) {
+      <mat-spinner diameter="20"></mat-spinner>
+    } @else {
+      {{ submitLabel }}
+    }
+  </button>
+</div>
+</form>

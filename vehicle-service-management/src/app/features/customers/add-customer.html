@@ -1,0 +1,28 @@
+<section class="page">
+  <header class="page-header">
+    <a class="back-link" routerLink="/customers">
+      ← Back to Customers
+    </a>
+
+    <p class="eyebrow">Customer Management</p>
+
+    <h1>Add Customer</h1>
+
+    <p class="page-description">
+      Register a customer before assigning vehicles to their account.
+    </p>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="form-error-summary" role="alert">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <app-customer-form
+    submitLabel="Add Customer"
+    [isSubmitting]="isSubmitting()"
+    (formSubmit)="createCustomer($event)"
+    (cancel)="cancel()"
+  />
+</section>

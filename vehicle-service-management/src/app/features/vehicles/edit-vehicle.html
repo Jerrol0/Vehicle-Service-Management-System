@@ -1,0 +1,48 @@
+<main class="page">
+  <header class="page-header">
+    <div>
+      <a class="back-link" routerLink="/vehicles">← Back to Vehicles</a>
+
+      <p class="eyebrow">Vehicle Management</p>
+      <h1>Edit Vehicle</h1>
+      <p class="page-description">
+        Update vehicle information and its customer assignment.
+      </p>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <section class="state-card">
+      <h2>Loading vehicle...</h2>
+      <p>Please wait while the vehicle information is loaded.</p>
+    </section>
+  } @else if (vehicle()) {
+    @if (errorMessage()) {
+      <section class="state-card state-error">
+        <h2>Unable to update vehicle</h2>
+        <p>{{ errorMessage() }}</p>
+      </section>
+    }
+
+    <app-vehicle-form
+      [vehicle]="vehicle()"
+      submitLabel="Save Changes"
+      [isSubmitting]="isSubmitting()"
+      (formSubmit)="updateVehicle($event)"
+      (cancel)="cancel()"
+    />
+  } @else {
+    <section class="state-card state-error">
+      <h2>Vehicle not found</h2>
+      <p>The requested vehicle could not be loaded.</p>
+
+      <button
+        mat-button
+        type="button"
+        (click)="cancel()"
+      >
+        Back to Vehicles
+      </button>
+    </section>
+  }
+</main>

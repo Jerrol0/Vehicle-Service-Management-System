@@ -1,0 +1,348 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Service Management</p>
+
+      <h1>Service Records</h1>
+
+      <p class="page-description">
+        Manage vehicle maintenance and service history.
+      </p>
+    </div>
+  </header>
+
+  <section
+    class="list-toolbar"
+    aria-label="Service record list controls"
+  >
+  <div class="filter-group">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search service records</mat-label>
+      <input
+        matInput
+        type="search"
+        [value]="listQuery().searchTerm ?? ''"
+        appDebouncedSearch
+        (debouncedSearch)="onSearchChange($event)"
+        placeholder="Search by service title or vehicle"
+      />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Service Type</mat-label>
+      <mat-select
+        [value]="listQuery().serviceType ?? null"
+        (valueChange)="
+          onServiceTypeChange($event === null ? undefined : $event)
+        "
+      >
+        <mat-option [value]="null">All Types</mat-option>
+
+        @for (type of serviceTypes; track type.value) {
+          <mat-option [value]="type.value">
+            {{ type.label }}
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Status</mat-label>
+      <mat-select
+        [value]="listQuery().status ?? null"
+        (valueChange)="onStatusChange($event === null ? undefined : $event)"
+      >
+        <mat-option [value]="null">All Statuses</mat-option>
+
+        @for (status of serviceStatuses; track status.value) {
+          <mat-option [value]="status.value">
+            {{ status.label }}
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Archive Status</mat-label>
+      <mat-select
+        [value]="listQuery().archiveStatus ?? 0"
+        (valueChange)="onArchiveStatusChange($event)"
+      >
+        @for (archiveStatus of archiveStatuses; track archiveStatus.value) {
+          <mat-option [value]="archiveStatus.value">
+            {{ archiveStatus.label }}
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="date-field">
+      <mat-label>Start Date</mat-label>
+      <input
+        matInput
+        type="date"
+        [value]="listQuery().startDate ?? ''"
+        (change)="onStartDateChange($any($event.target).value)"
+      />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="date-field">
+      <mat-label>End Date</mat-label>
+      <input
+        matInput
+        type="date"
+        [value]="listQuery().endDate ?? ''"
+        (change)="onEndDateChange($any($event.target).value)"
+      />
+    </mat-form-field>
+  </div>
+
+  <div class="page-actions">
+    <a
+      mat-flat-button
+      color="primary"
+      class="toolbar-action"
+      routerLink="/service-records/new"
+    >
+      Add Service Record
+    </a>
+  </div>
+  </section>
+
+  @if (isLoading()) {
+    <section
+      class="state-card"
+      role="status"
+    >
+      <h2>Loading service records...</h2>
+
+      <p>
+        Please wait while we retrieve service record information.
+      </p>
+    </section>
+  } @else if (loadError()) {
+    <section
+      class="state-card state-error"
+      role="alert"
+    >
+      <h2>Service records could not be loaded</h2>
+
+      <p>{{ loadError() }}</p>
+
+      <button
+        mat-stroked-button
+        type="button"
+        (click)="retryLoad()"
+      >
+        Try Again
+      </button>
+    </section>
+  } @else if (serviceRecords().length > 0) {
+    <section
+      class="table-card"
+      aria-label="Service record list"
+    >
+      <div class="table-wrapper">
+        <table
+          mat-table
+          [dataSource]="serviceRecords()"
+          matSort
+          [matSortActive]="listQuery().sortBy ?? ''"
+          [matSortDirection]="listQuery().sortBy
+              ? (listQuery().descending ? 'desc' : 'asc')
+              : ''
+          "
+          [matSortDisableClear]="false"
+          (matSortChange)="onSortChange($event)"
+        >
+          <ng-container matColumnDef="serviceTitle">
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header="ServiceTitle"
+            >
+              Service
+            </th>
+
+            <td mat-cell *matCellDef="let serviceRecord">
+              {{ serviceRecord.serviceTitle || '—' }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="vehicle">
+            <th mat-header-cell *matHeaderCellDef>
+              Vehicle
+            </th>
+
+            <td mat-cell *matCellDef="let serviceRecord">
+              {{ formatVehicle(serviceRecord) }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="customer">
+            <th mat-header-cell *matHeaderCellDef>
+              Customer
+            </th>
+
+            <td mat-cell *matCellDef="let serviceRecord">
+              @if (serviceRecord.vehicle?.customer?.fullName; as customerName) {
+                {{ customerName }}
+              } @else {
+                <span class="unassigned-badge">Unassigned</span>
+              }
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="serviceType">
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header="ServiceType"
+            >
+              Service Type
+            </th>
+
+            <td mat-cell *matCellDef="let serviceRecord">
+              {{ serviceRecord.serviceType || '—' }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header="Status"
+            >
+              Status
+            </th>
+
+            <td mat-cell *matCellDef="let serviceRecord">
+              {{ serviceRecord.status || '—' }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="serviceDate">
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header="ServiceDate"
+            >
+              Service Date
+            </th>
+
+            <td mat-cell *matCellDef="let serviceRecord">
+              {{ formatDate(serviceRecord.serviceDate) }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="totalCost">
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header="TotalCost"
+            >
+              Total Cost
+            </th>
+
+            <td mat-cell *matCellDef="let serviceRecord">
+              {{ formatCurrency(serviceRecord.totalCost) }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>
+              Actions
+            </th>
+
+            <td
+              mat-cell
+              *matCellDef="let serviceRecord"
+              class="actions"
+            >
+              <div class="actions-background">
+                @if (!serviceRecord.isArchived) {
+                  <a
+                    mat-icon-button
+                    [routerLink]="['/service-records', serviceRecord.id,]"
+                    matTooltip="View service record"
+                    aria-label="View service record"
+                  >
+                    <svg lucideEye></svg>
+                  </a>
+
+                  <a
+                    mat-icon-button
+                    [routerLink]="['/service-records', serviceRecord.id, 'edit',]"
+                    matTooltip="Edit service record"
+                    aria-label="Edit service record"
+                  >
+                    <svg lucideSquarePen></svg>
+                  </a>
+
+                  <button
+                    mat-icon-button
+                    type="button"
+                    (click)="requestArchive(serviceRecord)"
+                    matTooltip="Archive service record"
+                    aria-label="Archive service record"
+                  >
+                    <svg lucideArchive></svg>
+                  </button>
+                } @else {
+                  <button
+                    mat-icon-button
+                    color="primary"
+                    type="button"
+                    (click)="requestUnarchive(serviceRecord)"
+                    matTooltip="Unarchive service record"
+                    aria-label="Unarchive service record"
+                  >
+                    <svg lucideArchiveRestore></svg>
+                  </button>
+                }
+              </div>
+            </td>
+          </ng-container>
+
+          <tr
+            mat-header-row
+            *matHeaderRowDef="displayedColumns"
+          ></tr>
+
+          <tr
+            mat-row
+            *matRowDef="let row; columns: displayedColumns"
+          ></tr>
+        </table>
+      </div>
+
+      <mat-paginator
+        [length]="totalCount()"
+        [pageIndex]="listQuery().pageNumber - 1"
+        [pageSize]="listQuery().pageSize"
+        [pageSizeOptions]="[10, 25, 50]"
+        (page)="onPageChange($event)"
+        aria-label="Service record list pagination"
+      >
+      </mat-paginator>
+    </section>
+  } @else {
+    <section
+      class="state-card"
+      aria-labelledby="empty-state-title"
+    >
+      <h2 id="empty-state-title">No active service records</h2>
+
+      <p>
+        Create a service record to begin tracking vehicle maintenance history.
+      </p>
+
+      <a
+        class="button button-primary"
+        routerLink="/service-records/new"
+      >
+        Add Service Record
+      </a>
+    </section>
+  }
+</section>

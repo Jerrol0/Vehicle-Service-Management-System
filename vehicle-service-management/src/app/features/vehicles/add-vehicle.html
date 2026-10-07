@@ -1,0 +1,20 @@
+<main class="page">
+  <header class="page-header">
+    <div>
+      <a class="back-link" routerLink="/vehicles">← Back to Vehicles</a>
+      
+      <p class="eyebrow">Vehicle Management</p>
+      <h1>Add Vehicle</h1>
+      <p class="page-description">
+      Add a vehicle and optionally assign it to a customer.
+      </p>
+    </div>
+  </header>
+
+  <app-vehicle-form
+    submitLabel="Add Vehicle"
+    [isSubmitting]="isSubmitting()"
+    (formSubmit)="createVehicle($event)"
+    (cancel)="cancel()"
+  />
+</main>

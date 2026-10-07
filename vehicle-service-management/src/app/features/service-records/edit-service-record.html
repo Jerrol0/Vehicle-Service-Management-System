@@ -1,0 +1,220 @@
+<section class="page">
+  @if (serviceRecord()) {
+    <a
+      class="back-link"
+      [routerLink]="['/service-records', serviceRecord()!.id]"
+      aria-label="Back to Service Record"
+    >
+      <svg lucideArrowLeft></svg>
+      Back to Service Record
+    </a>
+  }
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Service Record</p>
+      <h1>Edit Service Record</h1>
+      <p class="page-description">
+        Update service details and record information.
+      </p>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <section class="state-card" aria-live="polite">
+      <h2>Loading service record...</h2>
+      <p>Please wait while the service record is retrieved.</p>
+    </section>
+  } @else if (loadError(); as error) {
+    <section class="state-card state-error" role="alert">
+      <h2>Unable to load service record</h2>
+      <p>{{ error }}</p>
+
+      <div class="state-actions">
+        <button
+          mat-flat-button
+          color="primary"
+          type="button"
+          (click)="loadServiceRecord()"
+        >
+          Try Again
+        </button>
+
+        <a
+          mat-stroked-button
+          routerLink="/service-records"
+        >
+          Back to Service Records
+        </a>
+      </div>
+    </section>
+  } @else if (serviceRecord(); as record) {
+    @if (record.isArchived) {
+      <section class="state-card state-warning">
+        <h2>Archived service record</h2>
+        <p>
+          Archived service records are read-only and cannot be edited.
+        </p>
+
+        <a
+          mat-stroked-button
+          [routerLink]="['/service-records', record.id]"
+        >
+          Back to Service Record
+        </a>
+      </section>
+    } @else {
+      <form
+        class="edit-form"
+        [formGroup]="form"
+        (ngSubmit)="save()"
+      >
+        <section class="form-card">
+          <div class="section-heading">
+            <div>
+              <p class="section-eyebrow">Vehicle</p>
+              <h2>Service Vehicle</h2>
+            </div>
+          </div>
+
+          <div class="vehicle-context">
+            <div>
+              <span>Vehicle</span>
+              <strong>{{ getVehicleDisplayName(record) }}</strong>
+            </div>
+
+            <div>
+              <span>Customer</span>
+              <strong>{{ getCustomerName(record) }}</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="form-card">
+          <div class="section-heading">
+            <div>
+              <p class="section-eyebrow">Service</p>
+              <h2>Service Details</h2>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Service Title</mat-label>
+              <input
+                matInput
+                formControlName="serviceTitle"
+              />
+
+              @if (form.controls.serviceTitle.hasError('required')) {
+                <mat-error>Service title is required.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Service Type</mat-label>
+              <mat-select formControlName="serviceType">
+                @for (type of serviceTypes; track type.value) {
+                  <mat-option [value]="type.value">
+                    {{ type.label }}
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Description</mat-label>
+              <textarea
+                matInput
+                rows="4"
+                formControlName="description"
+              ></textarea>
+
+              @if (form.controls.description.hasError('required')) {
+                <mat-error>Description is required.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Service Date</mat-label>
+              <input
+                matInput
+                type="date"
+                formControlName="serviceDate"
+              />
+
+              @if (form.controls.serviceDate.hasError('required')) {
+                <mat-error>Enter a valid service date.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Mileage at Service</mat-label>
+              <input
+                matInput
+                type="number"
+                min="0"
+                formControlName="mileageAtService"
+              />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Labor Cost</mat-label>
+              <input
+                matInput
+                type="number"
+                min="0"
+                step="0.01"
+                formControlName="laborCost"
+              />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Parts Cost</mat-label>
+              <input
+                matInput
+                type="number"
+                min="0"
+                step="0.01"
+                formControlName="partsCost"
+              />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>ServiceStatus</mat-label>
+              <mat-select formControlName="status">
+                @for (status of serviceStatuses; track status.value) {
+                  <mat-option [value]="status.value">
+                    {{ status.label }}
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </section>
+
+        <div class="form-actions">
+          <a
+            mat-stroked-button
+            [routerLink]="['/service-records', record.id]"
+            [class.disabled]="isSaving()"
+          >
+            Cancel
+          </a>
+
+          <button
+            mat-flat-button
+            color="primary"
+            type="submit"
+            [disabled]="isSaving()"
+          >
+            <span class="button-content">
+              <svg lucideSave></svg>
+              <span>{{ isSaving() ? 'Saving...' : 'Save Changes' }}</span>
+            </span>
+          </button>
+        </div>
+      </form>
+    }
+  }
+</section>

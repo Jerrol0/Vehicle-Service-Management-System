@@ -1,0 +1,242 @@
+<section class="page">
+  @if (serviceRecord()) {
+    @if (returnToVehicleHistoryId; as vehicleId) {
+      <a
+        class="back-link"
+        [routerLink]="['/vehicles', vehicleId, 'services']"
+        aria-label="Back to Vehicle History"
+      >
+        <svg lucideArrowLeft></svg>
+        Back to Vehicle History
+      </a>
+    } @else {
+      <a
+        class="back-link"
+        routerLink="/service-records"
+        aria-label="Back to Service Records"
+      >
+        <svg lucideArrowLeft></svg>
+        Back to Service Records
+      </a>
+    }
+  }
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Service Record</p>
+      <h1>Service Record Details</h1>
+      <p class="page-description">
+        Review service history, vehicle information, and service costs.
+      </p>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <section class="state-card" aria-live="polite">
+      <h2>Loading service record...</h2>
+      <p>Please wait while the service record is retrieved.</p>
+    </section>
+  } @else if (loadError(); as error) {
+    <section class="state-card state-error" role="alert">
+      <h2>Unable to load service record</h2>
+      <p>{{ error }}</p>
+
+      <div class="state-actions">
+        <button
+          mat-flat-button
+          color="primary"
+          type="button"
+          (click)="loadServiceRecord()"
+        >
+          Try Again
+        </button>
+
+        <a mat-stroked-button routerLink="/service-records">
+          Back to Service Records
+        </a>
+      </div>
+    </section>
+  } @else if (serviceRecord(); as record) {
+    @if (!record.isArchived) {
+      <div class="detail-actions">
+      <a
+        mat-flat-button
+        color="primary"
+        [routerLink]="['/service-records', record.id, 'edit']"
+      >
+        <span class="button-content">
+          <svg lucideSquarePen></svg>
+          <span>Edit Service Record</span>
+        </span>
+      </a>
+      </div>
+    }
+
+    <div class="detail-grid">
+      <section class="detail-card">
+        <div class="section-heading">
+          <div>
+            <p class="section-eyebrow">Service</p>
+            <h2>{{ record.serviceTitle }}</h2>
+          </div>
+
+          <span
+            class="status-badge"
+            [class.status-pending]="record.status === 'Pending'"
+            [class.status-in-progress]="record.status === 'InProgress'"
+            [class.status-completed]="record.status === 'Completed'"
+            [class.status-cancelled]="record.status === 'Cancelled'"
+          >
+            {{ formatStatus(record.status) }}
+          </span>
+        </div>
+
+        <mat-divider />
+
+        <dl class="detail-list">
+          <div class="detail-item">
+            <dt>Service Type</dt>
+            <dd>{{ formatServiceType(record.serviceType) }}</dd>
+          </div>
+
+          <div class="detail-item">
+            <dt>Service Date</dt>
+            <dd>{{ formatDate(record.serviceDate) }}</dd>
+          </div>
+
+          <div class="detail-item">
+            <dt>Mileage at Service</dt>
+            <dd>{{ formatMileage(record.mileageAtService) }}</dd>
+          </div>
+
+          <div class="detail-item detail-item-full">
+            <dt>Description</dt>
+            <dd>
+              {{ record.description || 'No description provided.' }}
+            </dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="detail-card">
+        <div class="section-heading">
+          <div>
+            <p class="section-eyebrow">Vehicle</p>
+            <h2>{{ getVehicleDisplayName(record) }}</h2>
+          </div>
+        </div>
+
+        <mat-divider />
+
+        @if (record.vehicle; as vehicle) {
+          <dl class="detail-list">
+            <div class="detail-item">
+              <dt>Plate Number</dt>
+              <dd>{{ vehicle.plateNumber }}</dd>
+            </div>
+
+            <div class="detail-item">
+              <dt>Brand</dt>
+              <dd>{{ vehicle.brand }}</dd>
+            </div>
+
+            <div class="detail-item">
+              <dt>Model</dt>
+              <dd>{{ vehicle.model }}</dd>
+            </div>
+
+            <div class="detail-item">
+              <dt>Year</dt>
+              <dd>{{ vehicle.year }}</dd>
+            </div>
+
+            <div class="detail-item">
+              <dt>Color</dt>
+              <dd>{{ vehicle.color }}</dd>
+            </div>
+
+            <div class="detail-item">
+              <dt>VIN</dt>
+              <dd>{{ vehicle.vin || 'Not provided' }}</dd>
+            </div>
+
+            <div class="detail-item">
+              <dt>Current Mileage</dt>
+              <dd>{{ formatMileage(vehicle.currentMileage) }}</dd>
+            </div>
+
+            <div class="detail-item">
+              <dt>Customer</dt>
+              <dd>{{ getCustomerName(record) }}</dd>
+            </div>
+          </dl>
+        } @else {
+          <p class="empty-detail">
+            Vehicle information is unavailable for this service record.
+          </p>
+        }
+      </section>
+
+      <section class="detail-card cost-card">
+        <div class="section-heading">
+          <div>
+            <p class="section-eyebrow">Cost Summary</p>
+            <h2>Service Costs</h2>
+          </div>
+        </div>
+
+        <mat-divider />
+
+        <dl class="detail-list">
+          <div class="detail-item">
+            <dt>Labor Cost</dt>
+            <dd>{{ formatCurrency(record.laborCost) }}</dd>
+          </div>
+
+          <div class="detail-item">
+            <dt>Parts Cost</dt>
+            <dd>{{ formatCurrency(record.partsCost) }}</dd>
+          </div>
+
+          <div class="detail-item total-item">
+            <dt>Total Cost</dt>
+            <dd>{{ formatCurrency(record.totalCost) }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="detail-card">
+        <div class="section-heading">
+          <div>
+            <p class="section-eyebrow">Record</p>
+            <h2>Record Information</h2>
+          </div>
+        </div>
+
+        <mat-divider />
+
+        <dl class="detail-list">
+          <div class="detail-item">
+            <dt>Record ID</dt>
+            <dd>#{{ record.id }}</dd>
+          </div>
+
+          <div class="detail-item">
+            <dt>Archive Status</dt>
+            <dd>{{ record.isArchived ? 'Archived' : 'Active' }}</dd>
+          </div>
+
+          <div class="detail-item">
+            <dt>Created</dt>
+            <dd>{{ formatDate(record.createdAt) }}</dd>
+          </div>
+
+          <div class="detail-item">
+            <dt>Last Updated</dt>
+            <dd>{{ formatDate(record.updatedAt) }}</dd>
+          </div>
+        </dl>
+      </section>
+    </div>
+  }
+</section>

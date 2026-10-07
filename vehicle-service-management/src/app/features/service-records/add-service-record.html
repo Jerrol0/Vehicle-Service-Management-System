@@ -1,0 +1,194 @@
+<div class="page">
+  <a mat-button routerLink="/service-records" aria-label="Back to Service Records">
+    <span class="button-content">
+      <svg lucideArrowLeft></svg>
+      <span>Back to Service Records</span>
+    </span>
+  </a>
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Service Records</p>
+      <h1>Add Service Record</h1>
+      <p class="page-description">
+        Record a service event for a vehicle and capture the work performed.
+      </p>
+    </div>
+  </header>
+  <form class="form-card" [formGroup]="form" (ngSubmit)="save()">
+    <section class="form-section">
+      <div class="section-heading">
+        <h2>Vehicle</h2>
+        <p>Search for and select the vehicle associated with this service event.</p>
+      </div>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Vehicle</mat-label>
+
+        <input
+          matInput
+          type="text"
+          placeholder="Search by plate number, vehicle, or customer"
+          appDebouncedSearch
+          (debouncedSearch)="searchVehicles($event)"
+          [matAutocomplete]="vehicleAutocomplete"
+        />
+
+          <mat-autocomplete
+            #vehicleAutocomplete="matAutocomplete"
+            [displayWith]="displayVehicleOption"
+            (opened)="openVehicleSearch()"
+            (optionSelected)="selectVehicle($event.option.value)"
+          >
+          @if (isSearchingVehicles()) {
+            <mat-option disabled> Searching vehicles... </mat-option>
+          } @else {
+            @for (vehicle of vehicleResults(); track vehicle.id) {
+              <mat-option [value]="vehicle">
+                <span class="vehicle-option">
+                  <strong>{{ vehicle.plateNumber }}</strong>
+
+                  <span>
+                    {{ getVehicleDisplayName(vehicle) }}
+                    · {{ vehicle.year }}
+                  </span>
+
+                  <span>
+                    Owner: {{ getCustomerName(vehicle) }}
+                  </span>
+                </span>
+              </mat-option>
+            }
+
+            @if (vehicleResults().length === 0 && !vehicleSearchError()) {
+              <mat-option disabled>No matching vehicles found.</mat-option>
+            }
+          }
+        </mat-autocomplete>
+
+        @if (form.controls.vehicleId.hasError('min')) {
+          <mat-error>Vehicle is required.</mat-error>
+        }
+      </mat-form-field>
+
+      @if (vehicleSearchError()) {
+        <p class="search-error">{{ vehicleSearchError() }}</p>
+      }
+
+      @if (selectedVehicle(); as vehicle) {
+        <div class="vehicle-context">
+          <div class="vehicle-context-header">
+            <span class="plate-number">{{ vehicle.plateNumber }}</span>
+
+            <span class="vehicle-status">Active</span>
+          </div>
+
+          <div class="vehicle-details">
+            <div>
+              <span class="detail-label">Vehicle</span>
+              <span>{{ getVehicleDisplayName(vehicle) }}</span>
+            </div>
+
+            <div>
+              <span class="detail-label">Year</span>
+              <span>{{ vehicle.year }}</span>
+            </div>
+
+            <div>
+              <span class="detail-label">Current Mileage</span>
+              <span>{{ vehicle.currentMileage }} km</span>
+            </div>
+
+            <div>
+              <span class="detail-label">Customer</span>
+              <span>{{ getCustomerName(vehicle) }}</span>
+            </div>
+          </div>
+        </div>
+      }
+    </section>
+
+    <section class="form-section">
+      <div class="section-heading">
+        <h2>Service Details</h2>
+        <p>Enter the details of the service performed.</p>
+      </div>
+
+      <div class="form-grid">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Service Title</mat-label>
+          <input matInput formControlName="serviceTitle" maxlength="100" />
+
+          @if (form.controls.serviceTitle.hasError('required')) {
+            <mat-error>Service title is required.</mat-error>
+          } @else if (form.controls.serviceTitle.hasError('maxlength')) {
+            <mat-error> Service title cannot exceed 100 characters. </mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Service Type</mat-label>
+
+          <mat-select formControlName="serviceType">
+            @for (type of serviceTypes; track type.value) {
+              <mat-option [value]="type.value">
+                {{ type.label }}
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Description</mat-label>
+          <textarea matInput rows="4" formControlName="description" maxlength="500"></textarea>
+
+          @if (form.controls.description.hasError('required')) {
+            <mat-error>Description is required.</mat-error>
+          } @else if (form.controls.description.hasError('maxlength')) {
+            <mat-error> Description cannot exceed 500 characters. </mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Service Date</mat-label>
+          <input matInput type="date" formControlName="serviceDate" />
+
+          @if (form.controls.serviceDate.hasError('required')) {
+            <mat-error>Enter a valid service date.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Mileage at Service</mat-label>
+          <input matInput type="number" formControlName="mileageAtService" min="0" />
+          <span matTextSuffix>km</span>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Labor Cost</mat-label>
+          <input matInput type="number" formControlName="laborCost" min="0" step="0.01" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Parts Cost</mat-label>
+          <input matInput type="number" formControlName="partsCost" min="0" step="0.01" />
+        </mat-form-field>
+      </div>
+    </section>
+
+    <div class="form-actions">
+      <a mat-stroked-button routerLink="/service-records" [attr.aria-disabled]="isSaving()">
+        Cancel
+      </a>
+
+      <button mat-flat-button color="primary" type="submit" [disabled]="isSaving()">
+        <span class="button-content">
+          <svg lucideSave></svg>
+          <span>
+            {{ isSaving() ? 'Creating...' : 'Create Service Record' }}
+          </span>
+        </span>
+      </button>
+    </div>
+  </form>
+</div>

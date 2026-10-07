@@ -1,0 +1,82 @@
+<h2 mat-dialog-title>Reassign Vehicle</h2>
+
+<mat-dialog-content>
+  <div class="dialog-intro">
+    <p class="vehicle-name">{{ data.vehicleName }}</p>
+
+    @if (data.currentCustomerName) {
+      <p class="current-customer">
+        Currently assigned to {{ data.currentCustomerName }}.
+      </p>
+    } @else {
+      <p class="current-customer">
+        This vehicle is currently unassigned.
+      </p>
+    }
+  </div>
+
+  <mat-form-field appearance="outline" class="customer-field">
+    <mat-label>New Customer</mat-label>
+
+    <input
+      matInput
+      appDebouncedSearch
+      [matAutocomplete]="customerAutocomplete"
+      [value]="selectedCustomer?.fullName ?? ''"
+      placeholder="Search by customer name..."
+      (debouncedSearch)="onCustomerSearch($event)"
+    />
+
+    <mat-autocomplete
+      #customerAutocomplete="matAutocomplete"
+      (optionSelected)="selectCustomer($event.option.value)"
+    >
+      @if (isLoadingCustomers()) {
+        <mat-option disabled>
+          <mat-spinner diameter="20"></mat-spinner>
+          Searching customers...
+        </mat-option>
+      }
+
+      @for (customer of customers(); track customer.id) {
+        <mat-option [value]="customer">
+          {{ customer.fullName }}
+        </mat-option>
+      }
+
+      @if (!isLoadingCustomers() && customers().length === 0) {
+        <mat-option disabled>
+          No customers found.
+        </mat-option>
+      }
+    </mat-autocomplete>
+
+    <mat-hint>
+      Only active customers can be selected.
+    </mat-hint>
+
+    @if (customerLoadError()) {
+      <mat-error>Unable to load customers.</mat-error>
+    }
+  </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button
+    mat-button
+    type="button"
+    (click)="cancel()"
+  >
+    Cancel
+  </button>
+
+  <button
+    mat-flat-button
+    color="primary"
+    type="button"
+    [disabled]="!selectedCustomer"
+    (click)="continue()"
+  >
+    Continue
+  </button>
+</mat-dialog-actions>

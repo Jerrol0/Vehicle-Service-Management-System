@@ -1,0 +1,148 @@
+<section class="page">
+  <a
+    class="back-link"
+    routerLink="/vehicles"
+    aria-label="Back to Vehicles"
+  >
+    <svg lucideArrowLeft></svg>
+    Back to Vehicles
+  </a>
+
+  @if (vehicle(); as currentVehicle) {
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Vehicle Service History</p>
+        <h1>{{ getVehicleDisplayName(currentVehicle) }}</h1>
+        <p class="page-description">
+          Review the complete service history for this vehicle.
+        </p>
+      </div>
+    </header>
+  } @else {
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Vehicle Service History</p>
+        <h1>Service History</h1>
+        <p class="page-description">
+          Review the service history for this vehicle.
+        </p>
+      </div>
+    </header>
+  }
+
+  @if (isLoading()) {
+    <section class="state-card" aria-live="polite">
+      <h2>Loading service history...</h2>
+      <p>Please wait while the vehicle service history is retrieved.</p>
+    </section>
+  } @else if (loadError(); as error) {
+    <section class="state-card state-error" role="alert">
+      <h2>Unable to load service history</h2>
+      <p>{{ error }}</p>
+
+      <div class="state-actions">
+        <button
+          mat-flat-button
+          color="primary"
+          type="button"
+          (click)="loadVehicleHistory()"
+        >
+          Try Again
+        </button>
+
+        <a mat-stroked-button routerLink="/vehicles">
+          Back to Vehicles
+        </a>
+      </div>
+    </section>
+  } @else if (serviceRecords().length > 0) {
+    <section class="table-card" aria-label="Vehicle service history">
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Service Date</th>
+              <th scope="col">Service</th>
+              <th scope="col">Type</th>
+              <th scope="col">Mileage</th>
+              <th scope="col">Status</th>
+              <th scope="col">Total Cost</th>
+              <th scope="col">Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (record of serviceRecords(); track record.id) {
+              <tr>
+                <td>
+                  {{ formatDate(record.serviceDate) }}
+                </td>
+
+                <td>
+                  <strong>{{ record.serviceTitle }}</strong>
+                </td>
+
+                <td>
+                  {{ formatServiceType(record.serviceType) }}
+                </td>
+
+                <td>
+                  {{ formatMileage(record.mileageAtService) }}
+                </td>
+
+                <td>
+                  <span
+                    class="status-badge"
+                    [class.status-pending]="record.status === 'Pending'"
+                    [class.status-in-progress]="
+                      record.status === 'InProgress'
+                    "
+                    [class.status-completed]="record.status === 'Completed'"
+                    [class.status-cancelled]="record.status === 'Cancelled'"
+                  >
+                    {{ formatStatus(record.status) }}
+                  </span>
+                </td>
+
+                <td>
+                  {{ formatCurrency(record.totalCost) }}
+                </td>
+
+                <td>
+                  <a
+                    mat-button
+                    color="primary"
+                    [routerLink]="['/service-records', record.id]"
+                    [queryParams]="{
+                      from: 'vehicle-history',
+                      vehicleId: vehicleId
+                    }"
+                  >
+                    View
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  } @else {
+    <section class="state-card" aria-labelledby="empty-history-title">
+      <h2 id="empty-history-title">No service history</h2>
+      <p>
+        This vehicle does not have any service records yet.
+      </p>
+
+      <div class="state-actions">
+        <a mat-flat-button color="primary" routerLink="/service-records/new">
+          Add Service Record
+        </a>
+
+        <a mat-stroked-button routerLink="/vehicles">
+          Back to Vehicles
+        </a>
+      </div>
+    </section>
+  }
+</section>

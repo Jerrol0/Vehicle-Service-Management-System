@@ -1,0 +1,265 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Vehicle Management</p>
+
+      <h1>Vehicles</h1>
+
+      <p class="page-description">
+        Manage vehicles and their service history.
+      </p>
+    </div>
+  </header>
+
+  <section class="list-toolbar" aria-label="Vehicle list controls">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search vehicles</mat-label>
+
+      <input
+        matInput
+        type="search"
+        appDebouncedSearch
+        placeholder="Search by plate number, brand, model..."
+        [value]="listQuery().searchTerm ?? ''"
+        (debouncedSearch)="onSearchChange($event)"
+      />
+    </mat-form-field>
+
+    <div class="page-actions">
+      <mat-form-field appearance="outline">
+        <mat-label>Archive Status</mat-label>
+
+        <mat-select
+          [value]="listQuery().archiveStatus"
+          (selectionChange)="onArchiveStatusChange($event.value)"
+        >
+          <mat-option [value]="0">Active</mat-option>
+          <mat-option [value]="1">Archived</mat-option>
+          <mat-option [value]="2">All</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <a
+        mat-flat-button
+        color="primary"
+        class="toolbar-action"
+        routerLink="/vehicles/new"
+      >
+        Add Vehicle
+      </a>
+    </div>
+  </section>
+
+  @if (isLoading()) {
+    <section class="state-card" role="status">
+      <h2>Loading vehicles...</h2>
+
+      <p>
+        Please wait while we retrieve vehicle information.
+      </p>
+    </section>
+  } @else if (loadError()) {
+    <section class="state-card state-error" role="alert">
+      <h2>Vehicles could not be loaded</h2>
+
+      <p>{{ loadError() }}</p>
+    </section>
+  } @else if (vehicles().length > 0) {
+    <section class="table-card" aria-label="Vehicle list">
+      <div class="table-wrapper">
+        <table
+          mat-table
+          [dataSource]="vehicles()"
+          matSort
+          [matSortActive]="listQuery().sortBy ?? ''"
+          [matSortDirection]="
+            listQuery().sortBy
+              ? (listQuery().descending ? 'desc' : 'asc')
+              : ''
+          "
+          [matSortDisableClear]="false"
+          (matSortChange)="onSortChange($event)"
+        >
+          <ng-container matColumnDef="plateNumber">
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header="PlateNumber"
+            >
+              Plate Number
+            </th>
+
+            <td
+              mat-cell
+              *matCellDef="let vehicle"
+              class="plate-number"
+            >
+              {{ vehicle.plateNumber || '—' }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="vehicle">
+            <th mat-header-cell *matHeaderCellDef>
+              Vehicle
+            </th>
+
+            <td mat-cell *matCellDef="let vehicle">
+              {{ formatVehicle(vehicle) || '—' }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="year">
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header="Year"
+            >
+              Year
+            </th>
+
+            <td mat-cell *matCellDef="let vehicle">
+              {{ vehicle.year }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="color">
+            <th mat-header-cell *matHeaderCellDef>
+              Color
+            </th>
+
+            <td mat-cell *matCellDef="let vehicle">
+              {{ vehicle.color || '—' }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="currentMileage">
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header="CurrentMileage"
+            >
+              Mileage
+            </th>
+
+            <td mat-cell *matCellDef="let vehicle">
+              {{ formatMileage(vehicle.currentMileage) }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="customerId">
+            <th mat-header-cell *matHeaderCellDef>
+              Customer
+            </th>
+
+            <td mat-cell *matCellDef="let vehicle">
+              @if (vehicle.customer?.fullName; as customerName) {
+                {{ customerName }}
+              } @else {
+                <span class="unassigned-badge">Unassigned</span>
+              }
+            </td>
+          </ng-container>
+
+          <!-- Actions -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>
+              Actions
+            </th>
+
+            <td mat-cell *matCellDef="let vehicle" class="actions">
+              <div class="actions-background">
+                @if (!vehicle.isArchived) {
+                  <a
+                    mat-icon-button
+                    [routerLink]="['/vehicles', vehicle.id, 'edit']"
+                    matTooltip="Edit vehicle"
+                    aria-label="Edit vehicle"
+                  >
+                   <svg lucideSquarePen></svg>
+                  </a>
+
+                  <a
+                    mat-icon-button
+                    color="primary"
+                    [routerLink]="['/vehicles', vehicle.id, 'services']"
+                    matTooltip="View service history"
+                    aria-label="View service history"
+                  >
+                    <svg lucideRotateCcwClock></svg>
+                  </a>
+
+                  <button
+                    mat-icon-button
+                    type="button"
+                    (click)="requestReassign(vehicle)"
+                    matTooltip="Reassign vehicle"
+                    aria-label="Reassign vehicle"
+                  >
+                    <svg lucideUserRoundArrowLeft></svg>
+                  </button>
+
+                  <button
+                    mat-icon-button
+                    class="primary"
+                    type="button"
+                    (click)="requestArchive(vehicle)"
+                    matTooltip="Archive vehicle"
+                    aria-label="Archive vehicle"
+                  >
+                    <svg lucideArchive></svg>
+                  </button>
+                } @else {
+                  <button
+                    mat-icon-button
+                    color="primary"
+                    type="button"
+                    (click)="requestUnarchive(vehicle)"
+                    matTooltip="Unarchive vehicle"
+                    aria-label="Unarchive vehicle"
+                  >
+                    <svg lucideArchiveRestore></svg>
+                  </button>
+                }
+              </div>
+            </td>
+          </ng-container>
+
+          <tr
+            mat-header-row
+            *matHeaderRowDef="displayedColumns"
+          ></tr>
+
+          <tr
+            mat-row
+            *matRowDef="let row; columns: displayedColumns"
+          ></tr>
+        </table>
+      </div>
+
+      <mat-paginator
+        [length]="totalCount()"
+        [pageIndex]="listQuery().pageNumber - 1"
+        [pageSize]="listQuery().pageSize"
+        [pageSizeOptions]="[10, 25, 50]"
+        (page)="onPageChange($event)"
+        aria-label="Vehicle list pagination"
+      >
+      </mat-paginator>
+    </section>
+  } @else {
+    <section class="state-card" aria-labelledby="empty-state-title">
+      <h2 id="empty-state-title">No active vehicles</h2>
+
+      <p>
+        Register a vehicle to begin managing service history.
+      </p>
+
+      <a
+        class="button button-primary"
+        routerLink="/vehicles/new"
+      >
+        Add Vehicle
+      </a>
+    </section>
+  }
+</section>

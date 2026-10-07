@@ -1,0 +1,213 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Customer Management</p>
+      <h1>Customers</h1>
+      <p class="page-description">
+        Manage customer information and vehicle ownership.
+      </p>
+    </div>
+  </header>
+
+  <section class="list-toolbar" aria-label="Customer list controls">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search customers</mat-label>
+
+        <input
+          matInput
+          type="search"
+          appDebouncedSearch
+          placeholder="Search by name, email, contact number..."
+          [value]="listQuery().searchTerm ?? ''"
+          (debouncedSearch)="onSearchChange($event)"
+        />
+      </mat-form-field>
+
+      <div class="page-actions">
+        <mat-form-field appearance="outline">
+          <mat-label>Archive Status</mat-label>
+
+          <mat-select 
+            [value]="listQuery().archiveStatus"
+            (selectionChange)="onArchiveStatusChange($event.value)"
+          >
+            <mat-option [value]="0">Active</mat-option>
+            <mat-option [value]="1">Archived</mat-option>
+            <mat-option [value]="2">All</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <a 
+          mat-flat-button
+          color="primary" 
+          class="toolbar-action"
+          routerLink="/customers/new"
+        >
+          Add Customer
+        </a>
+      </div>
+  </section>
+  
+  @if (isLoading()) {
+    <section class="state-card" role="status">
+      <h2>Loading customers...</h2>
+      <p>Please wait while we retrieve customer information.</p>
+    </section>
+  } @else if (loadError()) {
+    <section class="state-card state-error" role="alert">
+      <h2>Customers could not be loaded</h2>
+      <p>{{ loadError() }}</p>
+    </section>
+  } @else if (customers().length > 0) {
+    <section class="table-card" aria-label="Customer list">
+      <div class="table-wrapper">
+        <table 
+          mat-table
+          [dataSource]="customers()" 
+          matSort
+            [matSortActive]="listQuery().sortBy ?? ''"
+            [matSortDirection]="listQuery().sortBy
+                ? (listQuery().descending ? 'desc' : 'asc')
+                : ''
+            "
+            [matSortDisableClear]="false"
+            (matSortChange)="onSortChange($event)"
+          >
+          <!-- Full Name -->
+          <ng-container matColumnDef="fullName">
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header="FullName"
+            >
+              Full Name
+            </th>
+            
+            <td
+              mat-cell
+              *matCellDef="let customer"
+              class="customer-name"
+            >
+              {{ customer.fullName }}
+            </td>
+          </ng-container>
+              
+          <!-- Contact Number -->
+          <ng-container matColumnDef="contactNumber">
+            <th mat-header-cell *matHeaderCellDef>
+              Contact Number
+            </th>
+
+            <td mat-cell *matCellDef="let customer">
+              {{ customer.contactNumber }}
+            </td>
+          </ng-container>
+
+          <!-- Email -->
+          <ng-container matColumnDef="email">
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header="Email"
+            >
+              Email
+            </th>
+
+            <td mat-cell *matCellDef="let customer">
+              <a
+                class="email-link"
+                [href]="'mailto:' + customer.email"
+              >
+                {{ customer.email }}
+              </a>
+            </td>
+          </ng-container>
+
+          <!-- Address -->
+          <ng-container matColumnDef="address">
+            <th mat-header-cell *matHeaderCellDef>
+              Address
+            </th>
+
+            <td mat-cell *matCellDef="let customer">
+              {{ customer.address }}
+            </td>
+          </ng-container>
+
+          <!-- Actions -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>
+              Actions
+            </th>
+
+            <td mat-cell *matCellDef="let customer" class="actions">
+              <div class="actions-background">
+                @if (!customer.isArchived) {
+                  <a
+                    mat-icon-button
+                    [routerLink]="['/customers', customer.id, 'edit']"
+                    matTooltip="Edit customer"
+                    aria-label="Edit customer"
+                  >
+                    <svg lucideSquarePen></svg>
+                  </a>
+
+                  <button
+                    mat-icon-button
+                    color="primary"
+                    type="button"
+                    (click)="requestArchive(customer)"
+                    matTooltip="Archive customer"
+                    aria-label="Archive customer"
+                  >
+                    <svg lucideArchive></svg>
+                  </button>
+                } @else {
+                  <button
+                    mat-icon-button
+                    color="primary"
+                    type="button"
+                    (click)="requestUnarchive(customer)"
+                    matTooltip="Unarchive customer"
+                    aria-label="Unarchive customer"
+                  >
+                    <svg lucideArchiveRestore></svg>
+                  </button>
+                }
+                </div>
+              </td>
+          </ng-container>
+
+          <tr
+            mat-header-row
+            *matHeaderRowDef="displayedColumns"
+          ></tr>
+
+          <tr
+            mat-row
+            *matRowDef="let row; columns: displayedColumns"
+          ></tr>
+        </table>
+      </div>
+      <mat-paginator
+        [length]="totalCount()"
+        [pageIndex]="listQuery().pageNumber - 1"
+        [pageSize]="listQuery().pageSize"
+        [pageSizeOptions]="[10, 25, 50]"
+        (page)="onPageChange($event)"
+        aria-label="Customer list pagination"
+      >
+      </mat-paginator>
+    </section>
+    } @else {
+      <section class="state-card" aria-labelledby="empty-state-title">
+        <h2 id="empty-state-title">No active customers</h2>
+        <p>
+          Register a customer to begin managing vehicle ownership.
+        </p>
+        <a class="button button-primary" routerLink="/customers/new">
+          Add Customer
+        </a>
+      </section>
+    }
+</section>

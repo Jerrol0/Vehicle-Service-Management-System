@@ -1,0 +1,35 @@
+<div class="application-shell">
+  <aside class="sidebar">
+    <a class="brand" routerLink="/">
+      <span>
+        <strong>Vehicle Service</strong>
+        <small>Management System</small>
+      </span>
+    </a>
+
+    <nav aria-label="Primary navigation">
+      <a
+        routerLink="/"
+        routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Dashboard
+      </a>
+
+      <a routerLink="/customers" routerLinkActive="is-active">
+        Customers
+      </a>
+
+      <a routerLink="/vehicles" routerLinkActive="is-active">
+        Vehicles
+      </a>
+
+      <a routerLink="/service-records" routerLinkActive="is-active">
+        Service Records
+      </a>
+    </nav>
+  </aside>
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>

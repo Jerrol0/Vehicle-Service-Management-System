@@ -1,0 +1,39 @@
+<section class="page">
+  <header class="page-header">
+    <a class="back-link" routerLink="/customers">
+      ← Back to Customers
+    </a>
+
+    <p class="eyebrow">Customer Management</p>
+
+    <h1>Edit Customer</h1>
+
+    <p class="page-description">
+      Update the customer's contact and address information.
+    </p>
+  </header>
+
+  @if (isLoading()) {
+    <div class="loading-state" role="status">
+      Loading customer information…
+    </div>
+  } @else if (errorMessage() && !customer()) {
+    <div class="form-error-summary" role="alert">
+      {{ errorMessage() }}
+    </div>
+  } @else if (customer()) {
+    @if (errorMessage()) {
+      <div class="form-error-summary" role="alert">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <app-customer-form
+      [customer]="customer()"
+      submitLabel="Save Changes"
+      [isSubmitting]="isSubmitting()"
+      (formSubmit)="updateCustomer($event)"
+      (cancel)="cancel()"
+    />
+  }
+</section>
